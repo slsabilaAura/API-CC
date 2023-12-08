@@ -7,16 +7,8 @@ module.exports = {
 
   createUser: async(req,res)=>{
     try{
-      const { username, email, password, gender } = req.body;
+      const { username, email, password, gender, repeatPassword} = req.body;
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      // const existingUser = await checkUser(username, email);
-
-      // if (existingUser && existingUser.length) {
-      //   // User already exists
-      //   return res.status(409).json({
-      //     success: 0,
-      //     message: 'This username or email is already in use!',
-      //   });}
 
       if(!emailRegex.test(email) && password.trim().length < 7 ){
         return res.status(422).json({
@@ -25,14 +17,19 @@ module.exports = {
         });
       }
 
-      // if (password.length < 7)
       if(password.trim().length < 7) {
         return res.status(422).json({
           success: 0,
           message: "Password must be at least 7 characters long",
         });
       }
-      
+
+      if (password !== repeatPassword) {
+        return res.status(400).json({
+          success: 0,
+          message: "Passwords do not match",
+        });
+      }
       
       if (!emailRegex.test(email)) {
         return res.status(422).json({
@@ -41,74 +38,63 @@ module.exports = {
         });
       }
 
-     
-
-    
-        // User does not exist, proceed with registration logic
-        // const hashedPassword = hashSync(password, genSaltSync(10));
-        // await register({ username, email, password: hashedPassword, gender });
-        const result = await register({ username, email, password, gender });
-        return res.status(200).json({
-          success: 1,
-          message: "Registration successful",
-          data : result
-        });
+      // next();
+        // const result = await register({ username, email, password, gender });
+        // return res.status(200).json({
+        //   success: 1,
+        //   message: "Registration successful",
+        //   data : result
+        // });
       
-       
-        
-      
-          // if (duplicateUsers.length > 0) {
-          //   duplicateUsers.forEach((duplicateUser) => {
-          //     if (duplicateUser.username.toLowerCase() === username.toLowerCase()) {
-          //       return res.status(400).json({
-          //         success: 0,
-          //         message: "This username is already in use",
-          //       });
-          //     }
+        // } catch (error) {
+        //   console.error(error);
+        //   return res.status(500).json({
+        //     success: 0,
+        //     message: "Registration failed",
+        //   });
+        // }
 
-          //     if (duplicateUser.email.toLowerCase() === email.toLowerCase()) {
-          //       return res.status(400).json({
-          //         success: 0,
-          //         message: "This email is already in use",
-          //       });
-          //     }
-          //   });
-          // }
+        try {
+          const result = await register({ username, email, password, gender });
 
-          
+          const sanitizedResult = {
+            // Include any specific properties you want to send in the response
+            // For example, assuming result contains an 'id' property:
+            id: result.id,
 
-
-          // const hashedPassword = hashSync(body.password, genSaltSync(10));
-          // body.password=hashedPassword;
-
-          // Register the user
-          // await register({ username, email, password: hashedPassword, gender });
-
-          //register user 
-          
-          //bisa
-          //     const hashedPassword = hashSync(password, genSaltSync(10));
-
-          //     await register({ username, email, password: hashedPassword, gender });
-
-          //     return res.status(200).json({
-          //       success: 1,
-          //       message: "Registration successful",
-          //     });
-        } catch (error) {
-          console.error(error);
-          return res.status(500).json({
-            success: 0,
-            message: "Registration failed",
-            error: error.message, // Include the error message in the response for debugging
+          };
+          return res.status(200).json({
+            success: 1,
+            message: "Registration successful",
+            data: sanitizedResult,
           });
+        } catch (error) {
+          if (error.message.includes("Username is already taken")) {
+            return res.status(409).json({
+              success: 0,
+              message: "This username is already in use",
+            });
+          } else if (error.message.includes("Email is already taken")) {
+            return res.status(409).json({
+              success: 0,
+              message: "This email is already in use",
+            });
+          } else {
+            throw error; // Re-throw other errors
+          }
         }
-
+      } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+          success: 0,
+          message: "Registration failed",
+        });
+      }
+    
+  
 
       },
       
-
-
     login: (req, res) => {
       const body = req.body;
       const identifier = body.email || body.username;
@@ -190,7 +176,6 @@ module.exports = {
     });
   },
 
-
 updateUsername: (req, res) => {
   const { userId, newUsername } = req.body;
 
@@ -217,8 +202,6 @@ updateUsername: (req, res) => {
     }
   });
 },
-
-
 
 logout: (req, res) => {
   const token = req.get("authorization");

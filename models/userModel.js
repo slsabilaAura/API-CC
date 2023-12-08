@@ -1,16 +1,13 @@
 const mysql = require("../database/data");
 const uuid = require('uuid');
-// const bcrypt = require('bcryptjs');
 const { hashSync, genSaltSync} = require("bcrypt");
 const blacklistedTokens = new Set();
-// const util = require('util');
-// const queryAsync = util.promisify(mysql.query).bind(mysql);
+
 
 module.exports = {
 
   //create account
   register: async (data) => {
-    
     const { username, email, password, gender} = data;
 
     try{
@@ -32,7 +29,7 @@ module.exports = {
       const hashPassword = hashSync(data.password,salt);
       data.password = hashPassword;
 
-      //prepare 
+      //insert query
       const userId = uuid.v4();
       const query = `
       INSERT INTO users ( id, username, gender, email, password) 
@@ -53,9 +50,10 @@ module.exports = {
     
         if (result && result[0] && result[0].count !== undefined) {
           return result[0].count > 0;
-        } else {
-          throw new Error('Error in username check query');
-        }
+        } 
+        // else {
+        //   throw new Error('Username has already use');
+        // }
       } catch (error) {
         throw error;
       }
@@ -68,54 +66,16 @@ module.exports = {
     
         if (result && result[0] && result[0].count !== undefined) {
           return result[0].count > 0;
-        } else {
-          throw new Error('Error in email check query');
-        }
+        } 
+        // else {
+        //   throw new Error('Email has already use');
+        // }
       } catch (error) {
         throw error;
       }
     },
 
-  //
-
-// checkUser: async (username, email) => {
-//   try {
-//     console.log('Inside checkUser');
-//     const checkQuery = `
-//     SELECT id FROM users WHERE LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?)
-//     `;
-
-//     const result = await mysql.query(checkQuery, [username, email]);
-//     console.log('After database query in checkUser');
-//     return result;
-//   } catch (error) {
-//     console.error('checkUser error:', error);
-//     throw error;
-//   }
-// },
-
-  
-    
-
-      // const checkResults = await mysql.query(checkQuery, [email, username]);
-      //bisa
-      // const checkResults = await mysql.query(checkQuery, [username, email]);
-      // console.log('checkResults:', checkResults); 
-      // Add this line for debugging
-      //sini
-      // const userCount = (checkResults[0] && checkResults[0].count) || 0;
-
-      // return userCount>0;
-      // return checkResults;
-    
-    //   }catch (error)
-    //   {
-    //     console.error('checkUser error:', error);
-    //     throw error;
-    //   }
-    // },
-
-    
+  //    
 
   //login using username or email
   getUserByUserEmailOrUsername: (identifier, callBack) => {
