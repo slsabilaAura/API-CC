@@ -38,28 +38,12 @@ module.exports = {
         });
       }
 
-      // next();
-        // const result = await register({ username, email, password, gender });
-        // return res.status(200).json({
-        //   success: 1,
-        //   message: "Registration successful",
-        //   data : result
-        // });
-      
-        // } catch (error) {
-        //   console.error(error);
-        //   return res.status(500).json({
-        //     success: 0,
-        //     message: "Registration failed",
-        //   });
-        // }
-
+  
         try {
           const result = await register({ username, email, password, gender });
 
           const sanitizedResult = {
-            // Include any specific properties you want to send in the response
-            // For example, assuming result contains an 'id' property:
+            
             id: result.id,
 
           };
@@ -80,7 +64,7 @@ module.exports = {
               message: "This email is already in use",
             });
           } else {
-            throw error; // Re-throw other errors
+            throw error;
           }
         }
       } catch (error) {
