@@ -9,7 +9,12 @@ const {
   logout
 } = require('../controller/userController');
 
-const {getCategories,getfoodIdCategory} = require("../controller/gi_foodController");
+const {
+  getCategories,
+  getfoodIdCategory,
+  createNutritionEntry,
+  updateFoodName,
+  getHistory} = require("../controller/gi_foodController");
 
 router.get("/allUser", TokenCheck, getUsers);
 router.post('/register', createUser);
@@ -20,8 +25,14 @@ router.post('/logout', TokenCheck, logout);
 
 
 //get food 
-router.get("/category",getCategories);
-router.get("/food/:id_category",getfoodIdCategory);
+router.get("/category",TokenCheck,getCategories);
+router.get("/food/:id_category",TokenCheck,getfoodIdCategory);
+router.post("/result",TokenCheck,createNutritionEntry);
+router.patch('/result/updateFoodName/:id', TokenCheck,updateFoodName);
+router.get("/history/:id_user",TokenCheck,getHistory)
+
+// reuslt 
+
 
 
 module.exports = router;
