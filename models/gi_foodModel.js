@@ -36,17 +36,17 @@ getCategories: (callBack) => {
 
 
   createNutritionEntry: async (data) => {
+    const { id_users, id_food, food_name, charbo, protein, fat, calorie, serving_size, GL } = data;
     try {
       const resultId = uuid.v4();
-      const { id_user, id_food, food_name, charbo, protein, fat, calorie, serving_size, GL } = data;
-  
+      
       // Execute the SQL query
       const query = `
-        INSERT INTO result (id, id_user, id_food, food_name, charbo, protein, fat, calorie, serving_size, GL)
+        INSERT INTO result (id, id_users, id_food, food_name, charbo, protein, fat, calorie, serving_size, GL)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
       `;
   
-      const results = await mysql.query(query, [resultId, id_user, id_food, food_name, charbo, protein, fat, calorie, serving_size, GL]);
+      const results = await mysql.query(query, [resultId, id_users, id_food, food_name, charbo, protein, fat, calorie, serving_size, GL]);
       return results;
     } catch (error) {
       throw error; // Propagate the error to the caller
@@ -54,32 +54,56 @@ getCategories: (callBack) => {
   },
   
 
-  updateFoodName :async (id, newFoodName) => {
-    try {
+  updateFoodName :(data, callBack) => {
       const query = `
         UPDATE result
         SET food_name = ?
         WHERE id = ?;
       `;
   
-      const results = await mysql.query(query, [newFoodName, id]);
-      return results;
-    } catch (error) {
-      throw error;
-    }
+      mysql.query(query, [
+        data.food_name,
+        data.id
+      ], (error, results, fields) => {
+        if (error) {
+          callBack(error);
+        } else {
+          callBack(null, results);
+        }
+      });
+   
   },
 
-  
-  getHistory: (id_user,callBack) => {
+  getNutritionEntry :async (id, callBack) => {
     const query = `
-      SELECT food_name,GL  FROM result where id_user = ?
+    SELECT result.id, result.id, result.id_food, result.food_name, result.charbo, result.protein, result.fat, result.calorie, result.serving_size, result.GL, gi_food.GI  from result
+    left join gi_food on gi_food.id = result.id_food
+    inner join users on users.id=result.id_users
+    where result.id=?
+  `;
+
+  mysql.query(query, [id], (error, results, fields) => {
+    if (error) {
+      callBack(error);
+    } else {
+      callBack(null, results);
+    }
+  });
+  },
+  
+  getHistory: (id_users,callBack) => {
+    const query = `
+      SELECT result.food_name, result.GL, gi_food.GI 
+      FROM result
+      left join gi_food on result.id_food = gi_food.id 
+      where id_users = ?
     `;
 
-    mysql.query(query, [id_user], (error, results, fields) => {
+    mysql.query(query, [id_users], (error, results, fields) => {
       if (error) {
         callBack(error);
       } else {
-        callBack(null, results);
+        callBack(null, results[0]);
       }
     });
   },

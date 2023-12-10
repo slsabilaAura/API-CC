@@ -14,6 +14,7 @@ const {
   getfoodIdCategory,
   createNutritionEntry,
   updateFoodName,
+  getNutritionEntry,
   getHistory} = require("../controller/gi_foodController");
 
 router.get("/allUser", TokenCheck, getUsers);
@@ -28,8 +29,9 @@ router.post('/logout', TokenCheck, logout);
 router.get("/category",TokenCheck,getCategories);
 router.get("/food/:id_category",TokenCheck,getfoodIdCategory);
 router.post("/result",TokenCheck,createNutritionEntry);
+router.get("/result/:id",TokenCheck,getNutritionEntry);
 router.patch('/result/updateFoodName/:id', TokenCheck,updateFoodName);
-router.get("/history/:id_user",TokenCheck,getHistory)
+router.get("/history/:id_users",TokenCheck,getHistory)
 
 // reuslt 
 
