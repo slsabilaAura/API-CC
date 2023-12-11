@@ -12,11 +12,18 @@ module.exports = {
       if (!isTokenBlacklisted(token)) {
         jwt.verify(token, process.env.JWT_KEY, (err, decoded) => {
           if (err) {
-            console.error("JWT Verification Error:", err);
-            return res.status(401).json({
-              success: 0,
-              message: "Invalid Token"
-            });
+            if (err.name === 'TokenExpiredError') {
+              return res.status(401).json({
+                success: 0,
+                message: "Token has expired"
+              });
+            } else {
+              console.error("JWT Verification Error:", err);
+              return res.status(401).json({
+                success: 0,
+                message: "Invalid Token"
+              });
+            }
           } else {
             req.decoded = decoded;
             next();
@@ -25,7 +32,7 @@ module.exports = {
       } else {
         return res.status(401).json({
           success: 0,
-          message: "Token has been blacklisted"
+          message: "Token has been blacklisted. Please login first"
         });
       }
     } else {

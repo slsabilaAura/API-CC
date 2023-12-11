@@ -6,35 +6,36 @@ const {
   getUserByUserId,
   getUsers,
   updateUsername,
-  logout
+  logout,
+
 } = require('../controller/userController');
 
 const {
-  getCategories,
+
   getfoodIdCategory,
-  createNutritionEntry,
+  postNutritionEntry,
   updateFoodName,
+  getAllFood,
   getNutritionEntry,
   getHistory} = require("../controller/gi_foodController");
 
 router.get("/allUser", TokenCheck, getUsers);
-router.post('/register', createUser);
-router.post('/login', login);
-router.get('/profile/:id', TokenCheck, getUserByUserId);
-router.patch('/profile/updateusername/:id', TokenCheck, updateUsername);
-router.post('/logout', TokenCheck, logout);
+
+//user
+router.post('/register', createUser); //register
+router.post('/login', login); //login
+router.get('/profile/:id', TokenCheck, getUserByUserId); //getuserbyID
+router.patch('/profile/updateusername/:userId', TokenCheck, updateUsername);//updateUsername
+router.post('/logout', TokenCheck, logout);//logout
 
 
 //get food 
-router.get("/category",TokenCheck,getCategories);
-router.get("/food/:id_category",TokenCheck,getfoodIdCategory);
-router.post("/result",TokenCheck,createNutritionEntry);
-router.get("/result/:id",TokenCheck,getNutritionEntry);
-router.patch('/result/updateFoodName/:id', TokenCheck,updateFoodName);
-router.get("/history/:id_users",TokenCheck,getHistory)
-
-// reuslt 
-
+router.get("/allfood",TokenCheck,getAllFood)
+router.get("/food/:id_category",TokenCheck,getfoodIdCategory);//Get Food by Category
+router.post("/result/:id_users",TokenCheck,postNutritionEntry); //Entry hasil nutrition fact 
+router.get("/result/:id",TokenCheck,getNutritionEntry); //get hasil nutrion fact by id result
+router.patch('/result/updateFoodName/:idResult', TokenCheck,updateFoodName); //update nama foodnya
+router.get("/history/:id_users",TokenCheck,getHistory) //history user
 
 
 module.exports = router;
