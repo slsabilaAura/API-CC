@@ -7,7 +7,7 @@ const {
   updateUser,
   addTokenToBlacklist,
 } = require("../models/userModel");
-const { hashSync, genSaltSync, compareSync } = require("bcrypt");
+const {  compareSync } = require("bcrypt");
 const { sign } = require("jsonwebtoken");
 const jwt = require("jsonwebtoken");
 const blacklistedTokens = new Set();
@@ -188,22 +188,7 @@ module.exports = {
     });
   },
 
-  // logout: (req, res) => {
-  //   const token = req.get("authorization");
-
-  //   if (token && !isTokenBlacklisted(token)) {
-  //     logoutUserModel(token);
-  //     res.json({
-  //       success: 1,
-  //       message: 'User logged out successfully',
-  //     });
-  //   } else {
-  //     return res.status(401).json({
-  //       success: 0,
-  //       message: "Invalid or blacklisted token",
-  //     });
-  //   }
-  // },
+  
 
   logout: (req, res) => {
     const token = req.get("authorization");

@@ -123,7 +123,7 @@ module.exports = {
       } else {
         return res.status(404).json({
           success: 0,
-          message: "No rows were updated. Food not found or no changes made."
+          message: " Food not found or no changes made."
         });
       }
     });
@@ -143,7 +143,7 @@ module.exports = {
       if (!results || results.length === 0) {
         return res.status(404).json({
           success: 0,
-          message: "Cannot view the nutrition",
+          message: "Not found",
         });
       }
 
@@ -168,7 +168,7 @@ module.exports = {
       if (!results || results.length === 0) {
         return res.status(404).json({
           success: 0,
-          message: "No history available",
+          message: "history is not available",
         });
       }
 
