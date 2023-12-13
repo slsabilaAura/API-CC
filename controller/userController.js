@@ -1,4 +1,3 @@
-
 const {
   register,
   getUserByUserEmailOrUsername,
@@ -6,6 +5,8 @@ const {
   getUsers,
   updateUser,
   addTokenToBlacklist,
+  isUsernameTaken,
+  isEmailTaken
 } = require("../models/userModel");
 const {  compareSync } = require("bcrypt");
 const { sign } = require("jsonwebtoken");
@@ -13,19 +14,20 @@ const jwt = require("jsonwebtoken");
 const blacklistedTokens = new Set();
 
 module.exports = {
-  createUser: async (req, res) => {
-    try {
-      const { username, email, password, gender, repeatPassword } = req.body;
+  createUser: async(req,res)=>{
+    try{
+      const { username, email, password, gender, repeatPassword} = req.body;
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      
 
-      if (!emailRegex.test(email) && password.trim().length < 7) {
+      if(!emailRegex.test(email) && password.trim().length < 7 ){
         return res.status(422).json({
           success: 0,
           message: "Invalid email format and password must be at least 7 characters long",
         });
       }
 
-      if (password.trim().length < 7) {
+      if(password.trim().length < 7) {
         return res.status(422).json({
           success: 0,
           message: "Password must be at least 7 characters long",
@@ -38,7 +40,7 @@ module.exports = {
           message: "Passwords do not match",
         });
       }
-
+      
       if (!emailRegex.test(email)) {
         return res.status(422).json({
           success: 0,
@@ -46,40 +48,40 @@ module.exports = {
         });
       }
 
-      try {
-        const result = await register({ username, email, password, gender });
+        try {
+          const result = await register({ username, email, password, gender });
 
-        const sanitizedResult = {
-          id: result.id,
-        };
-        return res.status(200).json({
-          success: 1,
-          message: "Registration successful",
-          data: sanitizedResult,
-        });
-      } catch (error) {
-        if (error.message.includes("Username is already taken")) {
-          return res.status(409).json({
-            success: 0,
-            message: "This username is already in use",
+          const sanitizedResult = {
+            id: result.id,
+          };
+          return res.status(200).json({
+            success: 1,
+            message: "Registration successful",
+            // data: sanitizedResult,
           });
-        } else if (error.message.includes("Email is already taken")) {
-          return res.status(409).json({
-            success: 0,
-            message: "This email is already in use",
-          });
-        } else {
-          throw error;
+        } catch (error) {
+          if (error.message.includes("Username is already taken")) {
+            return res.status(409).json({
+              success: 0,
+              message: "This username is already in use",
+            });
+          } else if (error.message.includes("Email is already taken")) {
+            return res.status(409).json({
+              success: 0,
+              message: "This email is already in use",
+            });
+          } else {
+            throw error;
+          }
         }
+      } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+          success: 0,
+          message: "Registration failed",
+        });
       }
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({
-        success: 0,
-        message: "Registration failed",
-      });
-    }
-  },
+      },
 
   login: (req, res) => {
     const body = req.body;
@@ -90,14 +92,14 @@ module.exports = {
         console.log(err);
         return res.status(500).json({
           success: 0,
-          data: "Internal Server Error",
+          message: "Internal Server Error",
         });
       }
 
       if (!user) {
         return res.status(401).json({
           success: 0,
-          data: "Invalid email or username",
+          message: "Invalid email or username",
         });
       }
 
@@ -113,7 +115,11 @@ module.exports = {
         return res.status(200).json({
           success: 1,
           message: "Login successful",
-          token: token,
+          loginResult: {
+            userId: user.id, 
+            username: user.username,
+            token: token,
+          }
         });
       } else {
         return res.status(401).json({

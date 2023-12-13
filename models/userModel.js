@@ -5,6 +5,8 @@ const { hashSync, genSaltSync } = require("bcrypt");
 let blacklistedTokens = [];
 
 module.exports = {
+
+  //create account
   register: async (data) => {
     const { username, email, password, gender } = data;
 
@@ -23,8 +25,7 @@ module.exports = {
 
       // Hash the password
       const salt = genSaltSync(10);
-      const hashPassword = hashSync(data.password, salt);
-      data.password = hashPassword;
+      const hashPassword = hashSync(password, salt);
 
       // Insert query
       const userId = uuid.v4();
@@ -33,7 +34,7 @@ module.exports = {
         VALUES (?, ?, ?, ?, ?)
       `;
 
-      const results = await mysql.query(query, [userId, username, gender, email, data.password]);
+      const results = await mysql.query(query, [userId, username, gender, email, hashPassword]);
 
       return results;
     } catch (error) {
@@ -45,11 +46,10 @@ module.exports = {
     try {
       const query = 'SELECT COUNT(*) as count FROM users WHERE username = ?';
       const result = await mysql.query(query, [username]);
-
-      if (result && result[0] && result[0].count !== undefined) {
-        return result[0].count > 0;
-      }
+      console.log('isUsernameTaken result:', result); // Add this line
+      return result[0]?.count>0;
     } catch (error) {
+      console.error('isUsernameTaken error:', error); // Add this line
       throw error;
     }
   },
@@ -59,14 +59,15 @@ module.exports = {
       const query = 'SELECT COUNT(*) as count FROM users WHERE email = ?';
       const result = await mysql.query(query, [email]);
 
-      if (result && result[0] && result[0].count !== undefined) {
-        return result[0].count > 0;
-      }
+      return result[0]?.count>0;
     } catch (error) {
+      console.error('isUsernameTaken error:', error); // Add this line
       throw error;
     }
   },
 
+
+  
   getUserByUserEmailOrUsername: (identifier, callBack) => {
     const query = `
       SELECT * FROM users WHERE email = ? OR username = ?

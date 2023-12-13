@@ -133,7 +133,7 @@ CREATE TABLE `result` (
   `protein` int(255) DEFAULT NULL,
   `fat` int(255) DEFAULT NULL,
   `calorie` int(255) DEFAULT NULL,
-  `serving_size` int(255) NOT NULL,
+  `serving_size` int(255) DEFAULT NULL,
   `GL` int(255) DEFAULT NULL
 ) ;
 
