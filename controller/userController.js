@@ -5,8 +5,7 @@ const {
   getUsers,
   updateUser,
   addTokenToBlacklist,
-  isUsernameTaken,
-  isEmailTaken
+ 
 } = require("../models/userModel");
 const {  compareSync } = require("bcrypt");
 const { sign } = require("jsonwebtoken");
@@ -14,74 +13,57 @@ const jwt = require("jsonwebtoken");
 const blacklistedTokens = new Set();
 
 module.exports = {
-  createUser: async(req,res)=>{
-    try{
-      const { username, email, password, gender, repeatPassword} = req.body;
+  createUser : async (req, res) => {
+    try {
+      const { username, email, password, gender, repeatPassword } = req.body;
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      
-
-      if(!emailRegex.test(email) && password.trim().length < 7 ){
+  
+      if (!emailRegex.test(email) || password.trim().length < 7) {
         return res.status(422).json({
           success: 0,
-          message: "Invalid email format and password must be at least 7 characters long",
+          message: "Invalid email format or password must be at least 7 characters long",
         });
       }
-
-      if(password.trim().length < 7) {
-        return res.status(422).json({
-          success: 0,
-          message: "Password must be at least 7 characters long",
-        });
-      }
-
+  
       if (password !== repeatPassword) {
         return res.status(400).json({
           success: 0,
           message: "Passwords do not match",
         });
       }
-      
-      if (!emailRegex.test(email)) {
-        return res.status(422).json({
-          success: 0,
-          message: "Invalid email format",
+  
+      try {
+        const userData = await register({ username, email, password, gender });
+  
+        return res.status(200).json({
+          success: 1,
+          message: "Registration successful",
+          // data: userData, // Send the user data to the client
         });
-      }
-
-        try {
-          const result = await register({ username, email, password, gender });
-
-          const sanitizedResult = {
-            id: result.id,
-          };
-          return res.status(200).json({
-            success: 1,
-            message: "Registration successful",
-            // data: sanitizedResult,
-          });
-        } catch (error) {
-          if (error.message.includes("Username is already taken")) {
-            return res.status(409).json({
-              success: 0,
-              message: "This username is already in use",
-            });
-          } else if (error.message.includes("Email is already taken")) {
-            return res.status(409).json({
-              success: 0,
-              message: "This email is already in use",
-            });
-          } else {
-            throw error;
-          }
-        }
       } catch (error) {
+        if (error.message === 'Email is already registered.') {
+          return res.status(400).json({
+            success: 0,
+            message: "Email is already registered",
+          });
+        }
+  
         console.error(error);
         return res.status(500).json({
           success: 0,
           message: "Registration failed",
         });
       }
-      },
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({
+        success: 0,
+        message: "Internal server error",
+      });
+    }
+  },
+  
+
 
   login: (req, res) => {
     const body = req.body;

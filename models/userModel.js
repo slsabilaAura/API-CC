@@ -7,67 +7,50 @@ let blacklistedTokens = [];
 module.exports = {
 
   //create account
-  register: async (data) => {
-    const { username, email, password, gender } = data;
+  register :async ({ username, email, password, gender }) => {
 
-    try {
-      // Check if the username or email already exists
-      const isUsernameTaken = await module.exports.isUsernameTaken(username);
-      const isEmailTaken = await module.exports.isEmailTaken(email);
+    // Hash the password
+    const salt = genSaltSync(10);
+    const hashPassword = hashSync(password, salt);
 
-      if (isUsernameTaken) {
-        throw new Error('Username is already taken');
-      }
+    // Check if email already exists
+    const emailExists = await module.exports.checkIfEmailExists(email);
+  if (emailExists) {
+    throw new Error('Email is already registered.');
+  }
 
-      if (isEmailTaken) {
-        throw new Error('Email is already taken');
-      }
+    // Insert query
+    const userId = uuid.v4();
+    const insertQuery = `
+      INSERT INTO users (id, username, gender, email, password) 
+      VALUES (?, ?, ?, ?, ?)
+    `;
 
-      // Hash the password
-      const salt = genSaltSync(10);
-      const hashPassword = hashSync(password, salt);
+    const registrationResults = await mysql.query(insertQuery, [userId, username, gender, email, hashPassword]);
 
-      // Insert query
-      const userId = uuid.v4();
-      const query = `
-        INSERT INTO users (id, username, gender, email, password) 
-        VALUES (?, ?, ?, ?, ?)
-      `;
+    const userData = {
+      id: userId,
+      username: username,
+      gender: gender,
+      email: email,
+    };
 
-      const results = await mysql.query(query, [userId, username, gender, email, hashPassword]);
-
-      return results;
-    } catch (error) {
-      throw error; // Propagate the error to the caller
-    }
+    return userData;
   },
 
-  isUsernameTaken: async (username) => {
-    try {
-      const query = 'SELECT COUNT(*) as count FROM users WHERE username = ?';
-      const result = await mysql.query(query, [username]);
-      console.log('isUsernameTaken result:', result); // Add this line
-      return result[0]?.count>0;
-    } catch (error) {
-      console.error('isUsernameTaken error:', error); // Add this line
-      throw error;
-    }
+  checkIfEmailExists : async (email) => {
+    return new Promise((resolve, reject) => {
+      const query = 'SELECT * FROM users WHERE email = ?';
+      mysql.query(query, [email], (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result.length > 0);
+        }
+      });
+    });
   },
 
-  isEmailTaken: async (email) => {
-    try {
-      const query = 'SELECT COUNT(*) as count FROM users WHERE email = ?';
-      const result = await mysql.query(query, [email]);
-
-      return result[0]?.count>0;
-    } catch (error) {
-      console.error('isUsernameTaken error:', error); // Add this line
-      throw error;
-    }
-  },
-
-
-  
   getUserByUserEmailOrUsername: (identifier, callBack) => {
     const query = `
       SELECT * FROM users WHERE email = ? OR username = ?
