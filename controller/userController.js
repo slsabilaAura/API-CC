@@ -15,7 +15,7 @@ const blacklistedTokens = new Set();
 module.exports = {
   createUser : async (req, res) => {
     try {
-      const { username, email, password, gender, repeatPassword } = req.body;
+      const { username, email, password,  repeatPassword } = req.body;
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   
       if (!emailRegex.test(email) || password.trim().length < 7) {
@@ -33,7 +33,7 @@ module.exports = {
       }
   
       try {
-        const userData = await register({ username, email, password, gender });
+        const userData = await register({ username, email, password});
   
         return res.status(200).json({
           success: 1,
