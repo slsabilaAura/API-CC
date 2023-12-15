@@ -7,7 +7,7 @@ let blacklistedTokens = [];
 module.exports = {
 
   //create account
-  register :async ({ username, email, password, gender }) => {
+  register :async ({ username, email, password }) => {
 
     // Hash the password
     const salt = genSaltSync(10);
@@ -22,16 +22,15 @@ module.exports = {
     // Insert query
     const userId = uuid.v4();
     const insertQuery = `
-      INSERT INTO users (id, username, gender, email, password) 
+      INSERT INTO users (id, username, email, password) 
       VALUES (?, ?, ?, ?, ?)
     `;
 
-    const registrationResults = await mysql.query(insertQuery, [userId, username, gender, email, hashPassword]);
+    const registrationResults = await mysql.query(insertQuery, [userId, username, email, hashPassword]);
 
     const userData = {
       id: userId,
       username: username,
-      gender: gender,
       email: email,
     };
 
@@ -67,7 +66,7 @@ module.exports = {
 
   getUserByUserId: (id, callBack) => {
     const query = `
-      SELECT id, email, username, gender FROM users WHERE id = ?
+      SELECT id, email, username FROM users WHERE id = ?
     `;
 
     mysql.query(query, [id], (error, results, fields) => {
@@ -81,7 +80,7 @@ module.exports = {
 
   getUsers: (callBack) => {
     const query = `
-      SELECT id, username, gender, email FROM users
+      SELECT id, username, email FROM users
     `;
 
     mysql.query(query, [], (error, results, fields) => {
